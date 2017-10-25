@@ -1,0 +1,5 @@
+BIOS EDD-3 // http://www.t13.org/documents/UploadedDocuments/docs2008/e08134r1-BIOS_Enhanced_Disk_Drive_Services_4.0.pdf
+
+ATA/ATAPI-8 // http://www.t13.org/Documents/UploadedDocuments/docs2007/D1699r4c-ATA8-ACS.pdf
+
+FAT  // http://read.pudn.com/downloads77/ebook/294884/FAT32%20Spec%20%28SDA%20Contribution%29.pdf
