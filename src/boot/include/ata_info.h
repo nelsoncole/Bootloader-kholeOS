@@ -1,7 +1,7 @@
 #ifndef __ATA_INFO_H__
 #define __ATA_INFO_H__
 
-#include <boot.h>
+#include <typedef.h>
 
 
 typedef struct ata_info_s {

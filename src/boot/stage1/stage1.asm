@@ -25,7 +25,7 @@ org 0x7c00		; nosso offset
     db 0xEB,0x3C,0x90  
 	BS_OEMName DB "KHOLE0.3"	;10-3	char [8] 
 	BPB_BytsPerSec DW 512		;12-11
-	BPB_SecPerClus DB 2 		;13
+	BPB_SecPerClus DB 8 		;13
 	BPB_RsvdSecCnt DW 4		;15-14
 	BPB_NumFATs DB 2		;16
 	BPB_RootEntCnt DW 0x200		;18-17 Em FAT32 valor e sempre 0
@@ -47,11 +47,10 @@ org 0x7c00		; nosso offset
 code:
 	cli		; desabilita interrupções
     push cs
-    pop ax
-	mov ds,ax
-	mov es,ax
-	mov ss,ax
-	mov sp,0x1000	; 4KB, pilha
+    pop ds
+	;mov es,ax
+	;mov ss,ax
+	;mov sp,0x1000	; 4KB, pilha
 	sti		; habilita interrupções
 
 
@@ -216,6 +215,8 @@ code:
 ; Executa o stage2.bin
 
 
+    mov ax,3
+    int 0x10
 
 	xor dx,dx
 	mov dl,BYTE[BS_DrvNum]

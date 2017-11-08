@@ -4,13 +4,13 @@ CFLAGS=-Wall -m32 -ffreestanding -nostdlib -nostdinc -I ./include
 
 all:	
 
-	dd if=/dev/zero of=kholeOS.img bs=1024 count=720
+	dd if=/dev/zero of=kholeOS.img bs=512 count=1440
 
 	./kholefs boot/stage1.bin kholeOS.img
 
 	sudo mount kholeOS.img /mnt/
 
-	sudo cp boot/stage2.bin /mnt/
+	sudo cp boot/stage2.bin /mnt/	
 
 	sudo umount /mnt/
 

@@ -1,3 +1,4 @@
+#include <boot.h>
 #include <ata.h>
 #include <ata_info.h>
 

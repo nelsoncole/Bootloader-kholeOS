@@ -11,6 +11,7 @@
 #ifndef __ATA_H__
 #define __ATA_H__
 
+#include <typedef.h>
 #include <ata_info.h>
 
 #define CMD_READ_SECTORS_EXT 0x24
@@ -30,7 +31,7 @@ unsigned char command_select(int local_bus,unsigned char command);
 char define_bus(unsigned char device );  
 void soft_reset(int local_bus);
 
-void read_ata_pio(BYTE device,WORD sector_count,QWORD sector, void *buffer);
+void read_sector_ata_pio(BYTE device,WORD sector_count, int bytes_per_sector,QWORD sector, void *buffer);
 
 void identify_device(BYTE device,unsigned char command);
 

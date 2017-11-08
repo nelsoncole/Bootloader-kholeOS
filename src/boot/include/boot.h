@@ -21,12 +21,6 @@
 		"outb %%al,%%dx"::"a"(val),"d"(p))
 
 
-
-typedef unsigned char BYTE;
-typedef	unsigned short WORD;
-typedef	unsigned long DWORD;
-typedef	unsigned long long QWORD;
-
 //INLINE IO.C
 
 unsigned char inb(unsigned short port);
@@ -45,7 +39,13 @@ void puts(char *string);
 void printboot(const char *args, ...);
 
 
+int strncpy(void* s1, void* s2,unsigned count);
 
+
+
+//IDT
+
+void idt_install();
 
 
 

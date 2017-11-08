@@ -10,6 +10,7 @@
 
 
 #include <boot.h>
+#include <typedef.h>
 #include <stdarg.h>
 
 #define MEMORIA_START 0xB8000
@@ -22,6 +23,9 @@
 	BYTE cursor_x = 0;
 	BYTE cursor_y = 0;
 	BYTE coluna = 80;
+
+
+static unsigned strlen ( const char* str );
 static void scroll();
 static void k_i2hex(DWORD val, char* dest, int len);
 static void k_itoa(int value, char* valuestring);
@@ -29,12 +33,13 @@ static void k_itoa(int value, char* valuestring);
 // Drive de video cursor. Nota que iremos programar o driver sem gerar interrupções
 void update_cursor(){
 
-	WORD posicao_cursor = cursor_y *coluna + cursor_x;
+	WORD posicao_cursor = cursor_x + (cursor_y *80);
 	
-	outb(0x3D4,0xE);	// Comando cursor 15:8
-	outb(0x3D5,(BYTE)(posicao_cursor >> 8) &0xFF);
-	outb(0x3D4,0xF);	// Comando cursor 7:0
-	outb(0x3D5,(BYTE)(posicao_cursor) &0xFF);
+	outportb(0x3D4,0xE);	// Comando cursor 15:8
+	outportb(0x3D5,(BYTE)(posicao_cursor >> 8) &0xFF);
+	outportb(0x3D4,0xF);	// Comando cursor 7:0
+	outportb(0x3D5,(BYTE)(posicao_cursor) &0xFF);
+    
 }
 
 // Esta função posiciona o cursor na tela
@@ -58,13 +63,11 @@ void set_color(const char cor){
 // Esta função imprime um caracter na tela
 void putch (char c){
 
-	WORD *posicao = video + (cursor_y *coluna + cursor_x);
-	WORD atributo = color << 8;
+	WORD *posicao = video + ((cursor_y *coluna) + cursor_x);
+    
+	BYTE atributo = color; // WORD atributo = color << 8;
 	
-	if(MEMORIA_START == MEMORIA_END){
-		
-		set_cursor(0,0);
-		}
+
 	
 	if(c == '\b'&&cursor_x){
 		cursor_x--;
@@ -79,13 +82,11 @@ void putch (char c){
 	else if(c == '\n'){
 		cursor_x = 0;
 		cursor_y++;
-		update_cursor();
-	
 		}
 		
 	else if(c >= ' '){
 	
-		*posicao = c | atributo;
+		*posicao = c | atributo << 8;
     		cursor_x++;
 	}
 	
@@ -94,11 +95,12 @@ void putch (char c){
 		cursor_y++;
 		}
 		
-	if(cursor_y >= 25){
+	else if(cursor_y >= 25){
 	
 		scroll();
 		
 		}
+
 		
 	update_cursor();
 }
@@ -108,9 +110,12 @@ void putch (char c){
 void puts(char *string){
 
 
-	int i;
+	unsigned int i;
 
-	for(i=0;string[i]!= '\0';i++)putch(string[i]);
+	if(!string)return;
+	 
+	for(i=0;i <strlen(string);i++)
+	putch(string[i]);
 
 }
 
@@ -163,9 +168,13 @@ void printboot(const char *args, ...){
 				break;
 
 			case 'X':
+                d = va_arg (ap, int);
+				k_i2hex(d, buffer,8);
+				puts(buffer);
+				break;
 			case 'x':
 				d = va_arg (ap, int);
-				k_i2hex(d, buffer,8);
+				k_i2hex(d, buffer,2);
 				puts(buffer);
 				break;
 			
@@ -185,6 +194,14 @@ void printboot(const char *args, ...){
 		++index;
 	}
 
+}
+
+
+static unsigned strlen ( const char* str ) {
+
+	unsigned len=0;
+	while (str[len++]);
+	return len;
 }
 
 static void scroll()

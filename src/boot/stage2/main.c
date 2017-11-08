@@ -8,16 +8,20 @@
 
 #include <boot.h>
 #include <ata.h>
+#include <fat.h>
 
 
 extern unsigned char BootDevice;
 
 
 void main(){
+    
+    fat_init();
 
-	set_color(0xe);
-	printboot("[ Bem vindo ao \"stage2.bin\"... ]\
-		 \n\n[ Nelson Cole ]");
+    printboot("\nkholeOS!");
+
+    idt_install();
+
 
 	/*unsigned short *buffer =(unsigned short*)0x00100000;
 
