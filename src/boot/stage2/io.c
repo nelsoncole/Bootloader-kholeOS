@@ -28,12 +28,3 @@ inline void outb(unsigned int port, unsigned int val)
 {
 	asm volatile("outb %b0, %w1"::"a"(val),"dN"(port));
 }
-
-
-int strncpy(void* s1, void* s2,unsigned count){
-
- __asm__ __volatile__ ("cld; rep; movsb"::"c"(count),"D"(s1),"S"(s2));
-
-    return count;
-}
-

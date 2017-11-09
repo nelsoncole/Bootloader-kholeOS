@@ -17,7 +17,7 @@ all:
 	gcc ${CFLAGS} -c fs/*.c
 
 
-	ld -T stage2/boot.ld start.o puts16.o a20.o gdt.o idt.o flush.o main.o io.o display.o ata.o ata_info.o fat.o -o stage2.bin
+	ld -T stage2/boot.ld start.o puts16.o a20.o gdt.o idt.o flush.o main.o io.o display.o strings.o ata.o ata_info.o fat.o -o stage2.bin
 
 
 	rm *.o

@@ -39,7 +39,12 @@ void puts(char *string);
 void printboot(const char *args, ...);
 
 
+// STRINGS
+
+unsigned strlen ( const char* str );
 int strncpy(void* s1, void* s2,unsigned count);
+unsigned char strcmpb (void* s1, void* s2,unsigned count);
+void* memset(void *s, char val, unsigned count);
 
 
 

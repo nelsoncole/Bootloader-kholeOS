@@ -16,7 +16,7 @@ extern unsigned char BootDevice;
 
 void main(){
     
-    fat_init();
+    fat_init("kernel/kernel.bin");
 
     printboot("\nkholeOS!");
 

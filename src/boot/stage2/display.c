@@ -25,7 +25,7 @@
 	BYTE coluna = 80;
 
 
-static unsigned strlen ( const char* str );
+
 static void scroll();
 static void k_i2hex(DWORD val, char* dest, int len);
 static void k_itoa(int value, char* valuestring);
@@ -196,13 +196,6 @@ void printboot(const char *args, ...){
 
 }
 
-
-static unsigned strlen ( const char* str ) {
-
-	unsigned len=0;
-	while (str[len++]);
-	return len;
-}
 
 static void scroll()
 {
