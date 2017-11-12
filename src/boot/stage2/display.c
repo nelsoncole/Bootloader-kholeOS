@@ -67,9 +67,19 @@ void putch (char c){
     
 	BYTE atributo = color; // WORD atributo = color << 8;
 	
+    if(cursor_x >= 80){
+		cursor_x =0;
+		cursor_y++;
+		}
+		
+	if(cursor_y >= 25){
+	
+		scroll();
+		
+		}
 
 	
-	if(c == '\b'&&cursor_x){
+	else if(c == '\b'&&cursor_x){
 		cursor_x--;
 		putch(' ');
 		cursor_x--;
@@ -89,18 +99,6 @@ void putch (char c){
 		*posicao = c | atributo << 8;
     		cursor_x++;
 	}
-	
-	else if(cursor_x >= 80){
-		cursor_x =0;
-		cursor_y++;
-		}
-		
-	else if(cursor_y >= 25){
-	
-		scroll();
-		
-		}
-
 		
 	update_cursor();
 }
@@ -174,7 +172,7 @@ void printboot(const char *args, ...){
 				break;
 			case 'x':
 				d = va_arg (ap, int);
-				k_i2hex(d, buffer,2);
+				k_i2hex(d, buffer,3);
 				puts(buffer);
 				break;
 			

@@ -112,10 +112,6 @@ void soft_reset(int local_bus){
 
 void select_device (int local_bus, unsigned char device){
 
-
-	unsigned char status, busy, dev_ready,data_request;
-	int count=5;
-
 	/* 
 	Device register:
 
@@ -131,30 +127,6 @@ void select_device (int local_bus, unsigned char device){
 		case 1:outb(ide_io[local_bus][6],SLAVE_DEV);
 			break;
 		}
-
-
-		// Aqui esperamos 400ns, se BYS e DRQ for 1 arrobamos com um device reset ou soft reset
-
-		do{
-
-			status = inb(ide_io[local_bus][7]);
-			busy = status &0x80;
-			dev_ready = status &0x40;
-			data_request = status &0x08;
-
-		if(count == 0  && busy == 0x80){
-
-			set_color(4);
-			printboot("\n[ Not Select Device%i ]",local_bus);
-			set_color(0xF);
-			soft_reset(local_bus);
-			return;
-
-			}
-
-		}while(count-- || busy || data_request || !dev_ready);
-	 
-
 } 
 
 
@@ -165,11 +137,12 @@ unsigned char command_select(int local_bus,unsigned char command){
 
 	unsigned char status_register;
 	unsigned char busy, dev_ready, data_request;
-	int count=400;
-
+	int count=4;
 
 
 	outb(ide_io[local_bus][7],command);   // Command Read Sector
+    
+    delay(4); //Aqui devemos esperar 400ns
 
 	
 	do{

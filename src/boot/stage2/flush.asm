@@ -1,10 +1,20 @@
 BITS 32
+section .text
 
-GLOBAL idt_m
+GLOBAL lidt_install
 EXTERN idt
-idt_m:
+lidt_install:
 
-
-    lidt [idt]
-
+    
+    lidt [idt_ptr]
     ret
+
+
+
+section .data
+
+IDT_LIMIT equ $ - 256
+
+idt_ptr:
+	dw IDT_LIMIT - 1
+	dd idt

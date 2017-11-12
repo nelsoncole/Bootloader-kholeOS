@@ -11,6 +11,10 @@
 #ifndef __BOOT_H__
 #define __BOOT_H__
 
+
+
+#include <typedef.h>
+
 #define inportb(p)({\
 	unsigned char val;\
 	__asm__ __volatile__(\
@@ -20,12 +24,18 @@
 #define outportb(p,val)__asm__ __volatile__(\
 		"outb %%al,%%dx"::"a"(val),"d"(p))
 
+#define cli()__asm__ __volatile__ ("cli"::)
+#define sti()__asm__ __volatile__ ("sti"::)
+
+#define TRUE 1
+#define FALSE 0
+#define NULL 0
+
 
 //INLINE IO.C
 
 unsigned char inb(unsigned short port);
 void outb(unsigned int port, unsigned int val);
-
 
 
 
@@ -51,7 +61,27 @@ void* memset(void *s, char val, unsigned count);
 //IDT
 
 void idt_install();
+void trap(int n,DWORD offset,WORD sel,BYTE dpl );
+void interrupter(int n,DWORD offset,WORD sel,BYTE dpl );
 
+// EXCEPTIONs and IRQs
+void fault_exception(DWORD n);
+void isr_install();
+
+void irq_install();
+void irq_interrupter(DWORD irq);
+void irq_enable(int irq);
+void irq_disable(int irq);
+
+
+//PIC
+void pic_install();
+
+
+//TIMER ou PIT
+void timer_install(BYTE flag);
+void delay(DWORD milesegundo);
+void timer_irq();
 
 
 

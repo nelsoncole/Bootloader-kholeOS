@@ -1,7 +1,7 @@
 #include <boot.h>
 #include <typedef.h>
 
-extern void idt_m();
+extern void lidt_install();
 
 struct idt_s 
 {
@@ -27,9 +27,23 @@ static void set_gate_idt(int n,DWORD offset, WORD sel,BYTE flags, BYTE dpl, BYTE
 
 void idt_install(){
 
+    memset(idt,0,sizeof(idt));
+    
+    isr_install();
+    irq_install();
+    lidt_install();
 
-    idt_m();
 
+}
+
+
+void trap(int n,DWORD offset,WORD sel,BYTE dpl ){
+    set_gate_idt(n,offset,sel,0x8F,dpl,1);
+
+}
+
+void interrupter(int n,DWORD offset,WORD sel,BYTE dpl ){
+	set_gate_idt(n,offset,sel,0x8E,dpl,1);
 
 }
 
@@ -48,4 +62,7 @@ static void set_gate_idt(int n,DWORD offset, WORD sel,BYTE flags, BYTE dpl, BYTE
 
 
 }
+
+
+
 
