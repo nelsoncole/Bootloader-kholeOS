@@ -26,7 +26,7 @@ org 0x7c00		; nosso offset
 	BS_OEMName DB "KHOLE0.3"	;10-3	char [8] 
 	BPB_BytsPerSec DW 512		;12-11
 	BPB_SecPerClus DB 8 		;13
-	BPB_RsvdSecCnt DW 1		;15-14
+	BPB_RsvdSecCnt DW 4		;15-14
 	BPB_NumFATs DB 2		;16
 	BPB_RootEntCnt DW 0x200		;18-17 Em FAT32 valor e sempre 0
 	BPB_TotSec16 DW 0		;20-19   se o valor for zero significa que temos mais de 65535

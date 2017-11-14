@@ -137,7 +137,13 @@ int main(int argc, char *argv[]){
 
     disk_size = st.st_size/buffer_boot_record.BPB_BytsPerSec;
 
-    buffer_boot_record.BPB_TotSec16 = disk_size;
+   
+
+    if(disk_size > 0xFFFF){
+                buffer_boot_record.BPB_TotSec32 = disk_size;
+                buffer_boot_record.BPB_TotSec16 = 0;
+              }
+     else buffer_boot_record.BPB_TotSec16 = disk_size;
 
 
     /*Calculando a FATSz*/
@@ -150,11 +156,17 @@ int main(int argc, char *argv[]){
 
     FATSz = (TmpVal1 + (TmpVal2 -1))/TmpVal2;
 
+
+   
+
     buffer_boot_record.BPB_FATSz16 = FATSz &0x0000FFFF;
 	
 
+
+    total_sectors = (buffer_boot_record.BPB_TotSec16 == 0)? buffer_boot_record.BPB_TotSec32 : buffer_boot_record.BPB_TotSec16;
+
     /* determina se FAT12 ou FAT16 */
-    data_sectors = buffer_boot_record.BPB_TotSec16 
+    data_sectors = total_sectors 
                  - (buffer_boot_record.BPB_RsvdSecCnt + (buffer_boot_record.BPB_NumFATs * FATSz)
                  + root_dir_sectors);
     

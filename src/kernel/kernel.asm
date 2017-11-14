@@ -25,19 +25,13 @@ start:
 MAIN:
         
         mov edi,0xb8000
-        
-        mov [edi],byte 'N'
-        mov [edi+1],byte 0xa
-        mov [edi+2],byte 'E'
-        mov [edi+3],byte 0xa
-        mov [edi+4],byte 'L'
-        mov [edi+5],byte 0xa       
-        mov [edi+6],byte 'S'
-        mov [edi+7],byte 0xa  
-        mov [edi+8],byte 'O'
-        mov [edi+9],byte 0xa
-        mov [edi+10],byte 'N'
-        mov [edi+11],byte 0xa  
+        mov esi,string_test
+        mov ecx,len
+        mov ah,0xe
+.loop:  lodsb
+        mov [edi],ax
+        add edi,2
+        loop .loop 
     	
 
         ;extern main
@@ -47,6 +41,8 @@ L1:	cli
 	hlt
     	jmp L1
 
+string_test db "Hello, Kernel",0
+len equ $ - string_test
 section .bss
 global _pilha
     resb 8192 ; 8 KiB
