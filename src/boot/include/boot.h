@@ -15,6 +15,12 @@
 
 #include <typedef.h>
 
+
+#define outanyb(p) __asm__ __volatile__(\
+		"outb %%al,%0"::"dN"((p)) :"eax"\
+		)  /* Valeu Fred */
+
+
 #define inportb(p)({\
 	unsigned char val;\
 	__asm__ __volatile__(\
@@ -24,19 +30,23 @@
 #define outportb(p,val)__asm__ __volatile__(\
 		"outb %%al,%%dx"::"a"(val),"d"(p))
 
-#define cli()__asm__ __volatile__ ("cli"::)
-#define sti()__asm__ __volatile__ ("sti"::)
+/*#define cli()__asm__ __volatile__ ("cli"::)
+#define sti()__asm__ __volatile__ ("sti"::)*/
 
 #define TRUE 1
 #define FALSE 0
 #define NULL 0
 
 
+void cli();
+void sti();
+
 //INLINE IO.C
 
 unsigned char inb(unsigned short port);
 void outb(unsigned int port, unsigned int val);
 
+void _100ns(int n);
 
 
 
@@ -83,6 +93,10 @@ void timer_install(BYTE flag);
 void delay(DWORD milesegundo);
 void timer_irq();
 
+
+//KEYBOARD
+void keyboard_irq();
+void keyboard_install();
 
 
 

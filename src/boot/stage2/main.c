@@ -9,41 +9,43 @@
 #include <boot.h>
 #include <ata.h>
 #include <fs.h>
+#include <typedef.h>
 
 
 extern unsigned char BootDevice;
+extern void flush();
 
-unsigned char *dir=(unsigned char *)0x100000;
+unsigned int *buffer=(unsigned int *)0x100000;
 
 void main(){
 
 
     idt_install();
     timer_install(1);
-    printboot("\t\t\tOperational System: kholeOS!\n\n");
+    keyboard_install();
     sti();
+    printboot("[*] Operational System: kholeOS!\n");
+    
 
-    printboot("\t\tTesting, the pit and exception (divide error) \n\n\t\t\t\t      ");
 
-    int count;
-    for(count =29;count !=0;--count){
+    mount_disk(0x80);
+    if((read("kernel/kernel.bin",buffer))!=0){
+                    set_color(4);
+                    printboot("[*] Erro ao ler arquivo \"kernel/kernel.bin\"");
+                    set_color(0xf);
+            }else puts("[*] Kernel.bin   ");
+   
+
+/*    int count;
+    for(count =1;count >=0;--count){
+      
         if(count > 9)printboot("\b\b%i",count);
         else  if(count == 9)printboot("\b\b%i",count);
         else printboot("\b%i",count);
-        delay(1000);
-        
-        
+        _100ns(1000000);
+                
+    }*/
 
-        
-    }
-       puts("\n\n\t\t\t      ");
-    __asm__ __volatile__("div %%edx"::);
-
-
-   
-    
-
-    int i=0;
-    for(;i<(80*25)/2;i++)printboot("%c",dir[i]);
+            flush();
             
-	}
+}

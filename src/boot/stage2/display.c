@@ -34,12 +34,12 @@ static void k_itoa(int value, char* valuestring);
 void update_cursor(){
 
 	WORD posicao_cursor = cursor_x + (cursor_y *80);
-	
+	cli();
 	outportb(0x3D4,0xE);	// Comando cursor 15:8
 	outportb(0x3D5,(BYTE)(posicao_cursor >> 8) &0xFF);
 	outportb(0x3D4,0xF);	// Comando cursor 7:0
 	outportb(0x3D5,(BYTE)(posicao_cursor) &0xFF);
-    
+    sti();
 }
 
 // Esta função posiciona o cursor na tela

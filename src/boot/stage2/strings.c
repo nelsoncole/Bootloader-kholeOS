@@ -27,11 +27,11 @@ unsigned char strcmpb (void* s1, void* s2,unsigned count){
                            rep;\
                            cmpsb;\
                            je 1f;\
-                           movb $0,%%al; \
+                           movb $1,%%al; \
                            jmp 2f;\
-                           1: movb $1,%%al;\
+                           1: movb $0,%%al;\
                            2:"\
-                           :"=aN"(ret):"c"(count),"D"(s1),"S"(s2));
+                           :"=a"(ret):"c"(count),"D"(s1),"S"(s2));
 
     return ret;
 }

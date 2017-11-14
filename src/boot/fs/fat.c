@@ -125,7 +125,8 @@ struct data_s
 
 
 unsigned char *root_directory = (unsigned char *) 0x01000000; //Limit 2Mb
-unsigned char *fat_table= (unsigned char *) 0x01200000;   
+unsigned char *directory = (unsigned char *) 0x01200000; //Limit 2Mb
+unsigned char *fat_table= (unsigned char *) 0x01400000;   
  
 WORD sector_count;
 QWORD lba_start;
@@ -138,19 +139,22 @@ struct data_s *data;
 
 
 
+unsigned char dev;
+
+
 // FUNCOES A FAT
 
-unsigned char *mount_fat(BYTE dev){
+unsigned char *mount_fat(BYTE dev_t){
 
     DWORD offset = 0;
     DWORD table_value = 0;
     DWORD N;
     unsigned char copy_bpb[512];
-    void *TYPE;
     
 
     //init FAT
 
+    dev = dev_t;
 
     read_sector_ata_pio(dev,1,512,0,copy_bpb); //FIXME Aqui devo ler o primeiro sector da partição (Boot Record da FAT) e não o do disco
 
@@ -175,25 +179,21 @@ unsigned char *mount_fat(BYTE dev){
     {
         data->fat_type = FAT12;
 
-        TYPE = "FAT12";
     }
     else if (data->count_of_clusters < 65525 && bpb.BPB_FATSz16 != 0)
     {
         data->fat_type = FAT16;
 
-        TYPE = "FAT16";
     }
     else if (data->count_of_clusters < 268435445)
     {
         data->fat_type = FAT32;
 
-        TYPE = "FAT32";
     }
     else 
     {
         data->fat_type = ExFAT;
         printboot("Sem suporte, o volume deve ser ExFAT");
-        TYPE = "ExFAT";
         return 0;
 
     }
@@ -299,7 +299,9 @@ unsigned char *mount_fat(BYTE dev){
 
 
     }
-       return TYPE;
+
+       
+       return root_directory;
 
 
 }
@@ -309,7 +311,7 @@ unsigned char *mount_fat(BYTE dev){
 
 //FUNCAO FAT READ DIRECTORY/FILE
 
-unsigned fat_read_file(char *path,void *directory,void *physical_memory,BYTE dev,BYTE flags){
+_Bool fat_read_file(char *path,void *physical_memory,BYTE flags){
 
 
     int i,c;
@@ -326,17 +328,17 @@ unsigned fat_read_file(char *path,void *directory,void *physical_memory,BYTE dev
 
 // FIXME Aqui vamos ler os arquivos a partir dos dados do directório raíz
 
-
+    
             
         if(flags == 0) search = root_directory;
-        else search = directory; 
+        else if(flags == 1)search = directory; 
         offset_dir = 0;
 
 
 
 
 
-goto_1:    if(search[1 + offset_dir]==0) return 0; // FIXME errro
+goto_1:    if(search[1 + offset_dir]==0) return 1; // FIXME errro
      
            if(search[1+ offset_dir]==0xE5) goto goto_2; //Entrada não será utilizada
 
@@ -345,7 +347,7 @@ goto_1:    if(search[1 + offset_dir]==0) return 0; // FIXME errro
 
                     // Ler a parte do nome do arquivo longo em um buffer temporário, goto_8 
 
-                    strncpy( buffer_tmp ,root_directory + offset_dir,32);
+                    strncpy( buffer_tmp ,search + offset_dir,32);
                     goto goto_2;
 
             }
@@ -354,7 +356,7 @@ goto_1:    if(search[1 + offset_dir]==0) return 0; // FIXME errro
 
                     // Analizar a entrada, e extrair os dados para mais tarde poder utilizar.
 
-                    strncpy( &st_directory,root_directory + offset_dir,32);
+                    strncpy( &st_directory,search + offset_dir,32);
 
 
              }    
@@ -401,7 +403,7 @@ goto_1:    if(search[1 + offset_dir]==0) return 0; // FIXME errro
                 }
                  index++;
             }
-    
+
             memset(buffer_tmp,0,32);
 
             }else{
@@ -416,8 +418,8 @@ goto_1:    if(search[1 + offset_dir]==0) return 0; // FIXME errro
        //FIXME aqui vamos ler o sub directorio ou o arquivo seguindo cadei de cluster
 
 
-       if((strcmpb(name,path,strlen (path))) != 0){
-
+       if((strcmpb(name,path,strlen (path))) == 0){
+            
 
               // Lendo o first cluster
 
@@ -437,7 +439,7 @@ goto_1:    if(search[1 + offset_dir]==0) return 0; // FIXME errro
 
                   
 
-            } else return 0; // Volume deve ser ExFAT
+            } else return 3; //FIXME Volume deve ser ExFAT, erro
 
 
     do{
@@ -511,14 +513,13 @@ goto_1:    if(search[1 + offset_dir]==0) return 0; // FIXME errro
                 offset =  offset + (bpb.BPB_BytsPerSec * bpb.BPB_SecPerClus);
                 }else offset = 0;
 
+
         }while(table_value != EOF);
 
-          
+      
+            
 
-
-            //FIXME sucesso
-
-                    return 1;
+                    return 0;  //FIXME sucesso
      } else
             {
 

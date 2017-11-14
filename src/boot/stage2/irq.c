@@ -73,7 +73,7 @@ switch (irq){
 		timer_irq();
 		break;
 	case 1:
-		//keyboard_irq();
+		keyboard_irq();
 		break;
 	case 2:
 		break;

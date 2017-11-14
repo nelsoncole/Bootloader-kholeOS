@@ -52,8 +52,10 @@ void read_sector_ata_pio(BYTE device,WORD sector_count, int bytes_per_sector,QWO
 	int local_bus;
 
 
-
+    //cli();
 	local_bus = define_bus(device);
+
+
 	soft_reset(local_bus);
 
 
@@ -67,9 +69,6 @@ void read_sector_ata_pio(BYTE device,WORD sector_count, int bytes_per_sector,QWO
 	outb(ide_io[local_bus][3],sector);		// LBA 7-0   
 	outb(ide_io[local_bus][4],sector >> 8);		// LBA 15-8
 	outb(ide_io[local_bus][5],sector >> 16);	// LBA 23-16
-
-
-
 	select_device (local_bus,device);  //SELECT DEVICE
 	status_register = command_select(local_bus,CMD_READ_SECTORS_EXT); // CMD
 	
@@ -91,7 +90,7 @@ void read_sector_ata_pio(BYTE device,WORD sector_count, int bytes_per_sector,QWO
 
 		}
 
-
+    //sti();
 	
 
 }
@@ -136,22 +135,20 @@ unsigned char command_select(int local_bus,unsigned char command){
 
 
 	unsigned char status_register;
-	unsigned char busy, dev_ready, data_request;
-	int count=4;
+	unsigned char busy, dev_ready, data_request,error;
 
 
-	outb(ide_io[local_bus][7],command);   // Command Read Sector
-    
-    delay(4); //Aqui devemos esperar 400ns
-
-	
+	    outb(ide_io[local_bus][7],command);   // Command Read Sector
 	do{
-    		status_register = inb(ide_io[local_bus][7]);
-    		busy =status_register &0x80;
-   		dev_ready =status_register &0x40;
-		data_request = status_register &0x8;
+         _100ns(4); //Aqui devemos esperar 400ns    	
+        status_register = inb(ide_io[local_bus][7]);
+    		
+        busy = status_register &BSY;
+   		dev_ready = status_register &DRDY;
+		data_request = status_register &DRQ;
+        error = status_register &ERR;
 
-		if(count == 0 && busy == 0x80){
+		if(error == ERR){
 
 			set_color(4);
 			printboot("\n[ Error write Command Register %x ]",CMD_READ_SECTORS_EXT);
@@ -160,7 +157,7 @@ unsigned char command_select(int local_bus,unsigned char command){
 			return status_register;
 		}
 
-  	}while (count-- || busy || !dev_ready || !data_request);
+  	}while (busy || !dev_ready || !data_request);
 
 	
 
