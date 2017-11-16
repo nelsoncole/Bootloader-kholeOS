@@ -31,7 +31,7 @@ unsigned char command_select(int local_bus,unsigned char command);
 char define_bus(unsigned char device );  
 void soft_reset(int local_bus);
 
-void read_sector_ata_pio(BYTE device,WORD sector_count, int bytes_per_sector,QWORD sector, void *buffer);
+void read_sector_ata_pio(BYTE device,WORD sector_count, unsigned  int bytes_per_sector,QWORD sector, void *buffer);
 
 void identify_device(BYTE device,unsigned char command);
 

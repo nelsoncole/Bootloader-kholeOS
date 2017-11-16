@@ -19,20 +19,18 @@
 
 
 
-inline unsigned char inb(unsigned short port)
+unsigned char inb(unsigned short port)
 {
 	unsigned char ret_val;
 	asm volatile("inb %w1,%b0":"=a"(ret_val):"dN"(port));
 	return ret_val;
 }
 
-inline void outb(unsigned int port, unsigned int val)
+void outb(unsigned int port, unsigned int val)
 {
 	asm volatile("outb %b0, %w1"::"a"(val),"dN"(port));
 }
 
-inline void cli(){asm volatile ("cli");}
-inline void sti(){asm volatile ("sti");}
 
 void _100ns(int n){
 

@@ -122,14 +122,15 @@ struct data_s
 
 
 
-
+ 
 
 unsigned char *root_directory = (unsigned char *) 0x01000000; //Limit 2Mb
 unsigned char *directory = (unsigned char *) 0x01200000; //Limit 2Mb
-unsigned char *fat_table= (unsigned char *) 0x01400000;   
- 
+unsigned char *fat_table = (unsigned char *) 0x2000000;
+
+
 WORD sector_count;
-QWORD lba_start;
+QWORD lba_start =0;
 
 unsigned int EOF;
 
@@ -147,8 +148,10 @@ unsigned char dev;
 unsigned char *mount_fat(BYTE dev_t){
 
     DWORD offset = 0;
-    DWORD table_value = 0;
     DWORD N;
+    DWORD table_value;
+     
+
     unsigned char copy_bpb[512];
     
 
@@ -160,7 +163,6 @@ unsigned char *mount_fat(BYTE dev_t){
 
     strncpy(&bpb,copy_bpb,90);
     
-
 
     /* Determina o tipo de FAT montado no volume, o tipo de fat é determinado pelo número total de clusters em partiçao  */
 
@@ -237,10 +239,10 @@ unsigned char *mount_fat(BYTE dev_t){
         
         sector_count = data->fat_total_sectors;
 
-        lba_start = bpb.BPB_RsvdSecCnt;
-        
-        read_sector_ata_pio(dev,sector_count,bpb.BPB_BytsPerSec,lba_start,fat_table);
 
+
+        lba_start = bpb.BPB_RsvdSecCnt;
+        read_sector_ata_pio(dev,data->fat_size,bpb.BPB_BytsPerSec,lba_start,fat_table);
 
 // FIXME Lendo o Root Directory
 
@@ -283,15 +285,12 @@ unsigned char *mount_fat(BYTE dev_t){
             table_value = fat_table [N * 4 + 0];
             table_value = table_value | (fat_table [N * 4 + 1] << 8); 
             table_value = table_value | (fat_table [N * 4 + 2] << 16);
-            table_value = table_value | (fat_table [N * 4 + 3] << 24);
-            
+            table_value = table_value | ((fat_table [N * 4 + 3] << 24) &0x0f); 
+         
             if ( table_value != EOF){ 
                 N = table_value;
                 offset =  offset + (bpb.BPB_BytsPerSec * bpb.BPB_SecPerClus);
-                }else offset = 0;
-
-          offset++;  
-        
+                }else offset = 0;  
 
             
 
@@ -299,7 +298,7 @@ unsigned char *mount_fat(BYTE dev_t){
 
 
     }
-
+            
        
        return root_directory;
 
@@ -320,8 +319,9 @@ _Bool fat_read_file(char *path,void *physical_memory,BYTE flags){
     BYTE *search;
     int offset_dir = 0;
     DWORD offset = 0;
-    DWORD table_value = 0;
+    DWORD table_value;
     DWORD N;
+    //DWORD lba_start = 0;
 
     
     memset(name,0,32);
@@ -333,7 +333,6 @@ _Bool fat_read_file(char *path,void *physical_memory,BYTE flags){
         if(flags == 0) search = root_directory;
         else if(flags == 1)search = directory; 
         offset_dir = 0;
-
 
 
 
@@ -447,21 +446,21 @@ goto_1:    if(search[1 + offset_dir]==0) return 1; // FIXME errro
 
             data->first_sector_of_cluster = ((  N - 2)*bpb.BPB_SecPerClus) + data->first_data_sector;
 
-            lba_start = data->first_sector_of_cluster;
+            lba_start = data->first_sector_of_cluster &0xFFFFFFFF;
 
 
             //FIXME analiza se entrada é arquivo ou directório
 
 
         if(st_directory.DIR_Attr == FAT_ATTR_DIRECTORY) 
-                read_sector_ata_pio(dev,sector_count,bpb.BPB_BytsPerSec,lba_start,directory + offset);
+                read_sector_ata_pio(dev,bpb.BPB_SecPerClus,bpb.BPB_BytsPerSec,lba_start,directory + offset);
         else if(st_directory.DIR_Attr == FAT_ATTR_ARCHIVE ) 
-                read_sector_ata_pio(dev,sector_count,bpb.BPB_BytsPerSec,lba_start,physical_memory + offset);
+                read_sector_ata_pio(dev,bpb.BPB_SecPerClus,bpb.BPB_BytsPerSec,lba_start,physical_memory + offset);
 
         if (data->fat_type == FAT12)
         {
     
-           if((N%2)==0){
+            if((N%2)==0){
                 table_value = fat_table [N+(N/2)];
                 table_value = table_value | (fat_table [N + (N/2) + 1 ] << 8);
                 table_value = table_value &0xfff;
@@ -473,7 +472,6 @@ goto_1:    if(search[1 + offset_dir]==0) return 1; // FIXME errro
 
                 table_value = fat_table [N+(N/2)];
                 table_value = table_value | (fat_table [N + (N/2) + 1 ] << 8);
-
                 table_value = table_value >> 4 &0xfff;
 
 
@@ -481,7 +479,7 @@ goto_1:    if(search[1 + offset_dir]==0) return 1; // FIXME errro
       
 
 
-               EOF = 0x00000fff;
+               EOF = 0xfff;
         
         }
 
@@ -491,20 +489,20 @@ goto_1:    if(search[1 + offset_dir]==0) return 1; // FIXME errro
             table_value = fat_table [N * 2 + 0];
             table_value = table_value | (fat_table [N * 2 + 1] << 8);
 
-            EOF = 0x0000ffff;
+            EOF = 0xffff;
 
         }
 
 
         else if (data->fat_type == FAT32)
         {
+            
             table_value = fat_table [N * 4 + 0];
-            table_value = table_value | (fat_table [N * 4 + 1] << 8); 
+            table_value = table_value | (fat_table [N * 4 + 1] << 8);
             table_value = table_value | (fat_table [N * 4 + 2] << 16);
-            table_value = table_value | (fat_table [N * 4 + 3] << 24);
+            table_value = table_value | ((fat_table [N * 4 + 3] << 24) &0x0f);
 
-
-            EOF = 0x0fffffff;
+            EOF = 0xfffffff;
 
         }
             
@@ -513,11 +511,10 @@ goto_1:    if(search[1 + offset_dir]==0) return 1; // FIXME errro
                 offset =  offset + (bpb.BPB_BytsPerSec * bpb.BPB_SecPerClus);
                 }else offset = 0;
 
+	 }while(table_value != EOF); 
 
-        }while(table_value != EOF);
 
-      
-            
+
 
                     return 0;  //FIXME sucesso
      } else

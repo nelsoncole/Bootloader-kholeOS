@@ -48,6 +48,8 @@ _start:
 	
 ; Habilita Gate A20
 	call gateA20
+    mov ax,0x2401
+    int 0x15
 
 ; Testa a Gate A20 
 

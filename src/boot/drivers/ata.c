@@ -28,12 +28,26 @@
 #include <boot.h>
 #include <ata.h>
 
-static unsigned short ide_io [2][9]={
+
+
+
+int BARS[5][8];
+
+
+
+
+
+
+
+
+
+
+
+static unsigned ide_io [2][9]={
 	{0x1F0,0x1F1,0x1F2,0x1F3,0x1F4,0x1F5,0x1F6,0x1F7,0x3F6}, // Barramento primário
 	{0x170,0x171,0x172,0x173,0x174,0x175,0x176,0x177,0x376}  // Barramento secundário
 
 };
-
 
 static char *ata_msg[2]={
 "(Primary Bus, Master Device)",
@@ -43,55 +57,63 @@ static char *ata_msg[2]={
 
 
 
-void read_sector_ata_pio(BYTE device,WORD sector_count, int bytes_per_sector,QWORD sector, void *buffer){
+void read_sector_ata_pio(BYTE device,WORD sector_count, unsigned int bytes_per_sector,QWORD sector, void *buffer){
 
 
-	//printboot("\n\n[ Inicialize PIO (programmed input/output) data transfer ... ]");
 
-	unsigned char status_register;
-	int local_bus;
-
-
-    //cli();
+    int local_bus;
+    unsigned int offset = bytes_per_sector;
+    int count =0;
 	local_bus = define_bus(device);
 
+    
 
-	soft_reset(local_bus);
+    bytes_per_sector = bytes_per_sector/2;
 
+do{
 
+    	cli();
+
+    
+	//soft_reset(local_bus);
 
 	// Set sector LBA e sector count
-	outb(ide_io[local_bus][2],sector_count >> 8);	// Sector Count 15:8
+	outb(ide_io[local_bus][2],0);	// Sector Count 15:8
 	outb(ide_io[local_bus][3],sector >> 24);	// LBA 31-24   
 	outb(ide_io[local_bus][4],sector >> 32);	// LBA 39-32
 	outb(ide_io[local_bus][5],sector >> 40);	// LBA 47-40
-	outb(ide_io[local_bus][2],sector_count);	// Sector Count 7:0
+	outb(ide_io[local_bus][2],1);	// Sector Count 7:0
 	outb(ide_io[local_bus][3],sector);		// LBA 7-0   
 	outb(ide_io[local_bus][4],sector >> 8);		// LBA 15-8
 	outb(ide_io[local_bus][5],sector >> 16);	// LBA 23-16
-	select_device (local_bus,device);  //SELECT DEVICE
-	status_register = command_select(local_bus,CMD_READ_SECTORS_EXT); // CMD
+	 select_device (local_bus,device);  //SELECT DEVICE
 	
-	if(status_register &DRQ)
+	if((command_select(local_bus,CMD_READ_SECTORS_EXT)) &DRQ)
 	{
 
-        bytes_per_sector = bytes_per_sector/2;
+       
 		__asm__ __volatile__("rep; insw"\
- 	                 	     ::"D"(buffer),"d"(ide_io[local_bus][0]),"c"(bytes_per_sector*sector_count));	
+ 	                 	     ::"D"(buffer+ (count *offset)),"d"(ide_io[local_bus][0]),"c"(bytes_per_sector*1));	
 		}
         else {
 		
 		set_color(4);
 		printboot("\n[Error. PIO (Programmed Input/Output) data transfer. %s ]",ata_msg[local_bus]);
 		set_color(0xF);	
-        printboot("\n[ Status register: %x ]",status_register);	
 		soft_reset(local_bus);
 
 
 		}
 
-    //sti();
-	
+        count++;
+        sector ++;
+
+      	sti();
+
+    }while(--sector_count);
+
+  
+	   
 
 }
 
@@ -101,7 +123,7 @@ void read_sector_ata_pio(BYTE device,WORD sector_count, int bytes_per_sector,QWO
 
 void soft_reset(int local_bus){
 
-	outb(ide_io[local_bus][8],inb(ide_io[local_bus][8]) | SRST);
+	outb(ide_io[local_bus][8],inb(ide_io[local_bus][8])| SRST);
 	outb(ide_io[local_bus][8],inb(ide_io[local_bus][8]) &0xFB); //Precizamos redefinir o bit 2
 
 }
@@ -139,9 +161,11 @@ unsigned char command_select(int local_bus,unsigned char command){
 
 
 	    outb(ide_io[local_bus][7],command);   // Command Read Sector
+	    _100ns(4);  // Esperamos 400ns
+
 	do{
-         _100ns(4); //Aqui devemos esperar 400ns    	
-        status_register = inb(ide_io[local_bus][7]);
+          //Aqui devemos esperar 400ns    	
+        status_register = inportb(ide_io[local_bus][7]);
     		
         busy = status_register &BSY;
    		dev_ready = status_register &DRDY;

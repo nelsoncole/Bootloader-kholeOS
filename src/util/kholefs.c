@@ -37,9 +37,9 @@
 
 #define FAT_DIR_ENTRY_SIZE	32
 
-#define FAT12 "FAT12"
-#define FAT16 "FAT16"
-#define FAT32 "FAT32" 
+#define FAT12 "FAT12   "
+#define FAT16 "FAT16   "
+#define FAT32 "FAT32   "
 
 
 typedef struct fat_bpb {
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]){
 
    
 
-    if(disk_size > 0xFFFF){
+    if(disk_size > 65535){
                 buffer_boot_record.BPB_TotSec32 = disk_size;
                 buffer_boot_record.BPB_TotSec16 = 0;
               }
@@ -157,11 +157,6 @@ int main(int argc, char *argv[]){
     FATSz = (TmpVal1 + (TmpVal2 -1))/TmpVal2;
 
 
-   
-
-    buffer_boot_record.BPB_FATSz16 = FATSz &0x0000FFFF;
-	
-
 
     total_sectors = (buffer_boot_record.BPB_TotSec16 == 0)? buffer_boot_record.BPB_TotSec32 : buffer_boot_record.BPB_TotSec16;
 
@@ -176,15 +171,20 @@ int main(int argc, char *argv[]){
 
             /*FAT12 */
 
-            TYPE = 12;
+             TYPE = 12;
 
-            strncpy(buffer_boot_record.BS_FilSysType,FAT12,8);
+             buffer_boot_record.BPB_FATSz16 = FATSz &0xFFF;
+
+             strncpy(buffer_boot_record.BS_FilSysType,FAT12,8);
     
     }else if (count_of_clusters < 65525){
             /*FAT16 */
         
             TYPE = 16;
-        strncpy(buffer_boot_record.BS_FilSysType,FAT16,8);
+
+            buffer_boot_record.BPB_FATSz16 = FATSz &0xFFFF;
+            
+            strncpy(buffer_boot_record.BS_FilSysType,FAT16,8);
 
     }else{
             /*FAT32*/
@@ -194,9 +194,11 @@ int main(int argc, char *argv[]){
 
 
         }
-    
-    printf("FileSystem Type: %s\n",buffer_boot_record.BS_FilSysType);
-    printf("BytsPerSec = %i\n",buffer_boot_record.BPB_SecPerClus);  
+
+    puts("Status Disk:\n\n");    
+    printf("\tFileSystem Type: %s\n",buffer_boot_record.BS_FilSysType);
+    printf("\tBytsPerSec: %i\n",buffer_boot_record.BPB_BytsPerSec); 
+    printf("\tBytsPerClus: %i\n",buffer_boot_record.BPB_SecPerClus);  
 
  
 

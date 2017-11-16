@@ -41,7 +41,7 @@ L1:	cli
 	hlt
     	jmp L1
 
-string_test db "Hello, Kernel",0
+string_test db "Hello, Kernel!",0
 len equ $ - string_test
 section .bss
 global _pilha

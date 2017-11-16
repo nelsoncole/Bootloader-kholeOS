@@ -23,9 +23,9 @@ org 0x7c00		; nosso offset
 
 
     db 0xEB,0x3C,0x90  
-	BS_OEMName DB "KHOLE0.3"	;10-3	char [8] 
+	BS_OEMName DB "KHOLE0.1"	;10-3	char [8] 
 	BPB_BytsPerSec DW 512		;12-11
-	BPB_SecPerClus DB 8 		;13
+	BPB_SecPerClus DB 8		;13
 	BPB_RsvdSecCnt DW 4		;15-14
 	BPB_NumFATs DB 2		;16
 	BPB_RootEntCnt DW 0x200		;18-17 Em FAT32 valor e sempre 0

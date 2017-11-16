@@ -30,16 +30,13 @@
 #define outportb(p,val)__asm__ __volatile__(\
 		"outb %%al,%%dx"::"a"(val),"d"(p))
 
-/*#define cli()__asm__ __volatile__ ("cli"::)
-#define sti()__asm__ __volatile__ ("sti"::)*/
+#define cli()__asm__ __volatile__ ("cli"::)
+#define sti()__asm__ __volatile__ ("sti"::)
 
 #define TRUE 1
 #define FALSE 0
 #define NULL 0
 
-
-void cli();
-void sti();
 
 //INLINE IO.C
 
@@ -57,7 +54,7 @@ void set_color(const char cor);
 void putch (char c);
 void puts(char *string);
 void printboot(const char *args, ...);
-
+void clear();
 
 // STRINGS
 

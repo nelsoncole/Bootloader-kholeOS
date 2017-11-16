@@ -9,23 +9,13 @@ lidt_install:
     lidt [idt_ptr]
     ret
 
-GLOBAL flush
-flush:
+GLOBAL exet_kernel_i386
+exet_kernel_i386:
    	
 
     cli
-    mov ax,0x10
-	mov ds,ax
-	mov es,ax
-	mov fs,ax
-	mov gs,ax
-	mov eax,esp
-	push 0x10
-	push eax
-	pushf
-	push 0x8
-	push 0x100000
-	iretd
+	push ebx
+	jmp 0x8:0x100000
 
 
 section .data

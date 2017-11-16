@@ -39,7 +39,7 @@ void update_cursor(){
 	outportb(0x3D5,(BYTE)(posicao_cursor >> 8) &0xFF);
 	outportb(0x3D4,0xF);	// Comando cursor 7:0
 	outportb(0x3D5,(BYTE)(posicao_cursor) &0xFF);
-    sti();
+  	sti();
 }
 
 // Esta função posiciona o cursor na tela
@@ -48,7 +48,7 @@ void set_cursor(int x, int y){
 	
 	if(cursor_x <= 80)cursor_x = x;
 	if(cursor_y <= 25)cursor_y = y;
-	
+   	update_cursor();	
 	}
 
 
@@ -57,6 +57,24 @@ void set_cursor(int x, int y){
 void set_color(const char cor){
 	 color = (cor & 0x0F);
  }
+
+
+
+// Limpar tela
+void clear(){
+
+  WORD* memoria = video;
+  int i=0;
+  while(i < 80*25)
+  {
+     *memoria=' ' | (0xF << 8);
+      memoria++;
+      i++;
+	
+  }
+	 set_cursor(0,0);
+	
+	}
 
 
 
@@ -75,6 +93,7 @@ void putch (char c){
 	if(cursor_y >= 25){
 	
 		scroll();
+      
 		
 		}
 
@@ -172,7 +191,7 @@ void printboot(const char *args, ...){
 				break;
 			case 'x':
 				d = va_arg (ap, int);
-				k_i2hex(d, buffer,3);
+				k_i2hex(d, buffer,4);
 				puts(buffer);
 				break;
 			
