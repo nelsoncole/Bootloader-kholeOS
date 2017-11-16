@@ -37,14 +37,15 @@ int BARS[5][8];
 
 
 
-
+// Este driver por equanto não "suporta" SATA/SATAPI
+// Numa primeira instância me preocupei com a PATA
 
 
 
 
 
 static unsigned ide_io [2][9]={
-	{0x1F0,0x1F1,0x1F2,0x1F3,0x1F4,0x1F5,0x1F6,0x1F7,0x3F6}, // Barramento primário
+	{0x1F0,0x1F1,0x1F2,0x1F3,0x1F4,0x1F5,0x1F6,0x1F7,0x3F6}, // Barramento primário 
 	{0x170,0x171,0x172,0x173,0x174,0x175,0x176,0x177,0x376}  // Barramento secundário
 
 };
@@ -70,9 +71,11 @@ void read_sector_ata_pio(BYTE device,WORD sector_count, unsigned int bytes_per_s
 
     bytes_per_sector = bytes_per_sector/2;
 
+    cli();
+
 do{
 
-    	cli();
+    	
 
     
 	//soft_reset(local_bus);
@@ -108,11 +111,10 @@ do{
         count++;
         sector ++;
 
-      	sti();
 
     }while(--sector_count);
 
-  
+    sti();
 	   
 
 }
